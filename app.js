@@ -373,10 +373,22 @@ function updateAdvanceButton() {
 function bindGroupsAdvance() {
   const btn = document.getElementById('btn-advance-groups');
   if (!btn) return;
-  btn.replaceWith(btn.cloneNode(true)); // remove old listeners
+  btn.replaceWith(btn.cloneNode(true));
   const freshBtn = document.getElementById('btn-advance-groups');
   freshBtn.addEventListener('click', advanceToKnockout);
   updateAdvanceButton();
+
+  const backBtn = document.getElementById('btn-back-groups');
+  if (backBtn) {
+    backBtn.replaceWith(backBtn.cloneNode(true));
+    document.getElementById('btn-back-groups').addEventListener('click', goBackToSetup);
+  }
+
+  const resetBtn = document.getElementById('btn-reset-groups');
+  if (resetBtn) {
+    resetBtn.replaceWith(resetBtn.cloneNode(true));
+    document.getElementById('btn-reset-groups').addEventListener('click', resetTournament);
+  }
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -650,6 +662,18 @@ function bindKnockoutAdvance() {
   const freshBtn = document.getElementById('btn-advance-knockout');
   freshBtn.addEventListener('click', advanceToPodium);
   updateKnockoutAdvanceButton();
+
+  const backBtn = document.getElementById('btn-back-knockout');
+  if (backBtn) {
+    backBtn.replaceWith(backBtn.cloneNode(true));
+    document.getElementById('btn-back-knockout').addEventListener('click', goBackToGroups);
+  }
+
+  const resetBtn = document.getElementById('btn-reset-knockout');
+  if (resetBtn) {
+    resetBtn.replaceWith(resetBtn.cloneNode(true));
+    document.getElementById('btn-reset-knockout').addEventListener('click', resetTournament);
+  }
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -675,7 +699,49 @@ function renderPodium() {
   document.getElementById('podium-2nd').textContent = runnerUp;
   document.getElementById('podium-3rd').textContent = third;
 
-  document.getElementById('btn-reset').addEventListener('click', resetTournament);
+  const backBtn = document.getElementById('btn-back-podium');
+  if (backBtn) {
+    backBtn.replaceWith(backBtn.cloneNode(true));
+    document.getElementById('btn-back-podium').addEventListener('click', goBackToKnockout);
+  }
+
+  const resetBtn = document.getElementById('btn-reset-podium');
+  if (resetBtn) {
+    resetBtn.replaceWith(resetBtn.cloneNode(true));
+    document.getElementById('btn-reset-podium').addEventListener('click', resetTournament);
+  }
+}
+
+function goBackToSetup() {
+  if (!confirm('¿Volver al setup? Se perderán los grupos y resultados. Los equipos se conservan.')) return;
+  S.groups = null;
+  S.groupMatches = null;
+  S.qualifiers = null;
+  S.bracket = null;
+  S.phase = 'setup';
+  saveState();
+  showPhase('setup');
+  bindSetup();
+  renderTeamsList();
+}
+
+function goBackToGroups() {
+  if (!confirm('¿Volver a la fase de grupos? Se perderá el progreso en el bracket.')) return;
+  S.bracket = null;
+  S.qualifiers = null;
+  S.phase = 'groups';
+  saveState();
+  showPhase('groups');
+  renderGroups();
+  bindGroupsAdvance();
+}
+
+function goBackToKnockout() {
+  S.phase = 'knockout';
+  saveState();
+  showPhase('knockout');
+  renderKnockout();
+  bindKnockoutAdvance();
 }
 
 function resetTournament() {
@@ -706,3 +772,7 @@ window.saveGroupScore   = saveGroupScore;
 window.editGroupScore   = editGroupScore;
 window.saveBracketScore = saveBracketScore;
 window.editBracketScore = editBracketScore;
+window.goBackToSetup    = goBackToSetup;
+window.goBackToGroups   = goBackToGroups;
+window.goBackToKnockout = goBackToKnockout;
+window.resetTournament  = resetTournament;

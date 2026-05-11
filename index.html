@@ -47,10 +47,16 @@
   <section id="phase-groups" class="phase">
     <header class="top-bar">
       <div class="top-bar-left">
-        <span class="phase-label">Fase de Grupos</span>
-        <h2 id="groups-title" class="phase-title"></h2>
+        <button id="btn-back-groups" class="btn btn-ghost">← Volver</button>
+        <div>
+          <span class="phase-label">Fase de Grupos</span>
+          <h2 id="groups-title" class="phase-title"></h2>
+        </div>
       </div>
-      <button id="btn-advance-groups" class="btn btn-primary" disabled>Pasar a Cuartos →</button>
+      <div class="top-bar-right">
+        <button id="btn-reset-groups" class="btn btn-ghost btn-reset-inline">↺ Reiniciar</button>
+        <button id="btn-advance-groups" class="btn btn-primary" disabled>Pasar a Cuartos →</button>
+      </div>
     </header>
 
     <div class="groups-layout">
@@ -65,10 +71,16 @@
   <section id="phase-knockout" class="phase">
     <header class="top-bar">
       <div class="top-bar-left">
-        <span class="phase-label">Fase Eliminatoria</span>
-        <h2 id="knockout-title" class="phase-title"></h2>
+        <button id="btn-back-knockout" class="btn btn-ghost">← Volver</button>
+        <div>
+          <span class="phase-label">Fase Eliminatoria</span>
+          <h2 id="knockout-title" class="phase-title"></h2>
+        </div>
       </div>
-      <button id="btn-advance-knockout" class="btn btn-primary" disabled>Ver Podio →</button>
+      <div class="top-bar-right">
+        <button id="btn-reset-knockout" class="btn btn-ghost btn-reset-inline">↺ Reiniciar</button>
+        <button id="btn-advance-knockout" class="btn btn-primary" disabled>Ver Podio →</button>
+      </div>
     </header>
 
     <div class="bracket-wrapper">
@@ -94,6 +106,14 @@
   <!--  PHASE 3 — PODIUM                                           -->
   <!-- ════════════════════════════════════════════════════════════ -->
   <section id="phase-podium" class="phase">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <button id="btn-back-podium" class="btn btn-ghost">← Ver Bracket</button>
+      </div>
+      <div class="top-bar-right">
+        <button id="btn-reset-podium" class="btn btn-ghost btn-reset-inline">↺ Reiniciar</button>
+      </div>
+    </header>
     <div class="podium-bg"></div>
     <div class="podium-content">
       <h2 class="podium-headline">CAMPEÓN</h2>
@@ -114,7 +134,7 @@
           <div class="podium-bar bar-3rd"></div>
         </div>
       </div>
-      <button id="btn-reset" class="btn btn-outline">Nuevo Torneo</button>
+
     </div>
   </section>
 
