@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torneo Ping Pong</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!--  PHASE 0 — SETUP                                            -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <section id="phase-setup" class="phase active">
+    <div class="setup-bg"></div>
+    <div class="setup-content">
+      <div class="logo-mark">🏓</div>
+      <h1 class="site-title">TORNEO<br><span>PING PONG</span></h1>
+
+      <div class="setup-card">
+        <label class="field-label" for="tournament-name">Nombre del torneo</label>
+        <input id="tournament-name" class="field-input" type="text" placeholder="ej: Copa POLI 2026" maxlength="50" />
+
+        <div class="teams-header">
+          <label class="field-label">Equipos <span id="team-count" class="badge">0</span></label>
+          <div class="team-add-row">
+            <input id="team-name-input" class="field-input" type="text" placeholder="Nombre del equipo" maxlength="30" />
+            <button id="btn-add-team" class="btn btn-accent">+</button>
+          </div>
+        </div>
+
+        <ul id="teams-list" class="teams-list"></ul>
+
+        <p id="setup-hint" class="hint">Agregá al menos 8 equipos para comenzar.</p>
+
+        <button id="btn-start" class="btn btn-primary" disabled>INICIAR TORNEO</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!--  PHASE 1 — GROUPS                                           -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <section id="phase-groups" class="phase">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="phase-label">Fase de Grupos</span>
+        <h2 id="groups-title" class="phase-title"></h2>
+      </div>
+      <button id="btn-advance-groups" class="btn btn-primary" disabled>Pasar a Cuartos →</button>
+    </header>
+
+    <div class="groups-layout">
+      <!-- Groups & fixtures injected by JS -->
+      <div id="groups-container" class="groups-container"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!--  PHASE 2 — KNOCKOUT                                         -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <section id="phase-knockout" class="phase">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="phase-label">Fase Eliminatoria</span>
+        <h2 id="knockout-title" class="phase-title"></h2>
+      </div>
+      <button id="btn-advance-knockout" class="btn btn-primary" disabled>Ver Podio →</button>
+    </header>
+
+    <div class="bracket-wrapper">
+      <!-- QF -->
+      <div class="bracket-round" id="round-qf">
+        <div class="round-label">Cuartos de Final</div>
+        <div class="bracket-matches" id="qf-matches"></div>
+      </div>
+      <!-- SF -->
+      <div class="bracket-round" id="round-sf">
+        <div class="round-label">Semifinales</div>
+        <div class="bracket-matches" id="sf-matches"></div>
+      </div>
+      <!-- FINAL + 3RD -->
+      <div class="bracket-round" id="round-final">
+        <div class="round-label">Final</div>
+        <div class="bracket-matches" id="final-matches"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!--  PHASE 3 — PODIUM                                           -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <section id="phase-podium" class="phase">
+    <div class="podium-bg"></div>
+    <div class="podium-content">
+      <h2 class="podium-headline">CAMPEÓN</h2>
+      <div class="podium-stage">
+        <div class="podium-place podium-2nd">
+          <div class="podium-medal">🥈</div>
+          <div class="podium-team" id="podium-2nd">—</div>
+          <div class="podium-bar bar-2nd"></div>
+        </div>
+        <div class="podium-place podium-1st">
+          <div class="podium-medal">🥇</div>
+          <div class="podium-team podium-champ" id="podium-1st">—</div>
+          <div class="podium-bar bar-1st"></div>
+        </div>
+        <div class="podium-place podium-3rd">
+          <div class="podium-medal">🥉</div>
+          <div class="podium-team" id="podium-3rd">—</div>
+          <div class="podium-bar bar-3rd"></div>
+        </div>
+      </div>
+      <button id="btn-reset" class="btn btn-outline">Nuevo Torneo</button>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
