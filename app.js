@@ -389,6 +389,8 @@ function bindGroupsAdvance() {
     resetBtn.replaceWith(resetBtn.cloneNode(true));
     document.getElementById('btn-reset-groups').addEventListener('click', resetTournament);
   }
+
+  bindEditGroupsButton();
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -776,3 +778,262 @@ window.goBackToSetup    = goBackToSetup;
 window.goBackToGroups   = goBackToGroups;
 window.goBackToKnockout = goBackToKnockout;
 window.resetTournament  = resetTournament;
+
+// ═════════════════════════════════════════════════════════════════════
+//  EDIT GROUPS MODAL
+// ═════════════════════════════════════════════════════════════════════
+
+let _editGroups      = null;
+let _draggedTeam     = null;
+let _draggedFromGroup = null;
+
+// ── Touch drag state ─────────────────────────────────────────────────
+let _touchClone      = null;   // floating ghost element
+let _touchOffsetX    = 0;
+let _touchOffsetY    = 0;
+let _lastHighlighted = null;   // column currently highlighted
+
+function openEditGroupsModal() {
+  _editGroups = S.groups.map(g => [...g]);
+  renderEditModal();
+  document.getElementById('modal-edit-groups').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditGroupsModal() {
+  _removeTouchClone();
+  document.getElementById('modal-edit-groups').hidden = true;
+  document.body.style.overflow = '';
+  _editGroups = null;
+  _draggedTeam = null;
+  _draggedFromGroup = null;
+}
+
+// ── Render ────────────────────────────────────────────────────────────
+function renderEditModal() {
+  const container = document.getElementById('modal-groups-container');
+  const warning   = document.getElementById('modal-warning');
+  container.innerHTML = '';
+  warning.hidden = true;
+
+  _editGroups.forEach((group, gi) => {
+    const label = 'ABCD'[gi];
+    const col = document.createElement('div');
+    col.className = 'modal-group-col';
+    col.dataset.group = gi;
+
+    col.innerHTML = `
+      <div class="modal-group-label">
+        GRUPO ${label}
+        <span class="modal-group-count">${group.length} eq.</span>
+      </div>
+    `;
+
+    group.forEach(teamName => {
+      const chip = document.createElement('div');
+      chip.className = 'modal-team-chip';
+      chip.textContent = teamName;
+      chip.draggable = true;
+      chip.dataset.team = teamName;
+      chip.dataset.fromGroup = gi;
+
+      // ── Mouse / desktop drag ──────────────────────────────────────
+      chip.addEventListener('dragstart', e => {
+        _draggedTeam = teamName;
+        _draggedFromGroup = gi;
+        chip.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+
+      // ── Touch drag ────────────────────────────────────────────────
+      chip.addEventListener('touchstart', _touchStart, { passive: false });
+
+      col.appendChild(chip);
+    });
+
+    if (group.length === 0) {
+      const ph = document.createElement('div');
+      ph.className = 'modal-drop-placeholder';
+      ph.textContent = 'Soltá un equipo acá';
+      col.appendChild(ph);
+    }
+
+    // Drop zone — mouse
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', e => {
+      if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const toGroup = parseInt(col.dataset.group, 10);
+      if (_draggedTeam === null || _draggedFromGroup === toGroup) return;
+      _moveTeam(_draggedFromGroup, toGroup, _draggedTeam);
+    });
+
+    container.appendChild(col);
+  });
+}
+
+// ── Touch handlers ────────────────────────────────────────────────────
+function _touchStart(e) {
+  const chip = e.currentTarget;
+  _draggedTeam      = chip.dataset.team;
+  _draggedFromGroup = parseInt(chip.dataset.fromGroup, 10);
+
+  const touch = e.touches[0];
+  const rect  = chip.getBoundingClientRect();
+  _touchOffsetX = touch.clientX - rect.left;
+  _touchOffsetY = touch.clientY - rect.top;
+
+  // Create ghost clone
+  _removeTouchClone();
+  _touchClone = chip.cloneNode(true);
+  _touchClone.style.cssText = `
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.85;
+    width: ${rect.width}px;
+    left: ${touch.clientX - _touchOffsetX}px;
+    top:  ${touch.clientY - _touchOffsetY}px;
+    margin: 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border-color: var(--green);
+  `;
+  document.body.appendChild(_touchClone);
+  chip.classList.add('dragging');
+
+  document.addEventListener('touchmove',  _touchMove,  { passive: false });
+  document.addEventListener('touchend',   _touchEnd,   { passive: false });
+  document.addEventListener('touchcancel',_touchEnd,   { passive: false });
+
+  e.preventDefault();
+}
+
+function _touchMove(e) {
+  if (!_touchClone) return;
+  const touch = e.touches[0];
+  _touchClone.style.left = `${touch.clientX - _touchOffsetX}px`;
+  _touchClone.style.top  = `${touch.clientY - _touchOffsetY}px`;
+
+  // Highlight the column under the finger
+  _touchClone.style.display = 'none';
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  _touchClone.style.display = '';
+
+  const col = el && el.closest('.modal-group-col');
+  if (_lastHighlighted && _lastHighlighted !== col) {
+    _lastHighlighted.classList.remove('drag-over');
+  }
+  if (col) {
+    col.classList.add('drag-over');
+    _lastHighlighted = col;
+  } else {
+    _lastHighlighted = null;
+  }
+
+  e.preventDefault();
+}
+
+function _touchEnd(e) {
+  document.removeEventListener('touchmove',   _touchMove);
+  document.removeEventListener('touchend',    _touchEnd);
+  document.removeEventListener('touchcancel', _touchEnd);
+
+  if (_lastHighlighted) _lastHighlighted.classList.remove('drag-over');
+
+  if (_touchClone) {
+    const touch = e.changedTouches[0];
+    _touchClone.style.display = 'none';
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    _touchClone.style.display = '';
+    const col = el && el.closest('.modal-group-col');
+    if (col) {
+      const toGroup = parseInt(col.dataset.group, 10);
+      if (_draggedTeam !== null && _draggedFromGroup !== toGroup) {
+        _moveTeam(_draggedFromGroup, toGroup, _draggedTeam);
+        _removeTouchClone();
+        return; // renderEditModal re-renders everything
+      }
+    }
+  }
+
+  // No valid drop — clean up dragging style
+  const allChips = document.querySelectorAll('.modal-team-chip.dragging');
+  allChips.forEach(c => c.classList.remove('dragging'));
+  _removeTouchClone();
+  _draggedTeam = null;
+  _draggedFromGroup = null;
+}
+
+function _removeTouchClone() {
+  if (_touchClone) { _touchClone.remove(); _touchClone = null; }
+  _lastHighlighted = null;
+}
+
+// ── Shared move logic ─────────────────────────────────────────────────
+function _moveTeam(fromGroup, toGroup, teamName) {
+  _editGroups[fromGroup] = _editGroups[fromGroup].filter(t => t !== teamName);
+  _editGroups[toGroup].push(teamName);
+  _draggedTeam = null;
+  _draggedFromGroup = null;
+  renderEditModal();
+}
+
+// ── Confirm ───────────────────────────────────────────────────────────
+function confirmEditGroups() {
+  const invalid = _editGroups.some(g => g.length < 2);
+  const warning = document.getElementById('modal-warning');
+  if (invalid) { warning.hidden = false; return; }
+  warning.hidden = true;
+
+  const changedGroups = new Set();
+  _editGroups.forEach((newGroup, gi) => {
+    const oldGroup = S.groups[gi] || [];
+    const same = newGroup.length === oldGroup.length && newGroup.every(t => oldGroup.includes(t));
+    if (!same) changedGroups.add('ABCD'[gi]);
+  });
+
+  S.groups = _editGroups.map(g => [...g]);
+
+  S.groupMatches = buildGroupMatches(S.groups).map(newMatch => {
+    if (!changedGroups.has(newMatch.group)) {
+      const existing = S.groupMatches && S.groupMatches.find(
+        m => m.group === newMatch.group &&
+          ((m.home === newMatch.home && m.away === newMatch.away) ||
+           (m.home === newMatch.away && m.away === newMatch.home))
+      );
+      if (existing) {
+        return existing.home === newMatch.home
+          ? { ...newMatch, homeScore: existing.homeScore, awayScore: existing.awayScore }
+          : { ...newMatch, homeScore: existing.awayScore, awayScore: existing.homeScore };
+      }
+    }
+    return newMatch;
+  });
+
+  saveState();
+  closeEditGroupsModal();
+  renderGroups();
+  bindGroupsAdvance();
+}
+
+// ── Bind button ───────────────────────────────────────────────────────
+function bindEditGroupsButton() {
+  const btn = document.getElementById('btn-edit-groups');
+  if (!btn) return;
+  btn.replaceWith(btn.cloneNode(true));
+  document.getElementById('btn-edit-groups').addEventListener('click', openEditGroupsModal);
+  document.getElementById('btn-modal-cancel').addEventListener('click', closeEditGroupsModal);
+  document.getElementById('btn-modal-confirm').addEventListener('click', confirmEditGroups);
+
+  document.getElementById('modal-edit-groups').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-edit-groups')) closeEditGroupsModal();
+  });
+}
