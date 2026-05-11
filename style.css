@@ -699,6 +699,30 @@ input { font-family: var(--font-body); }
 .bar-3rd { height: 50px;  background: #b87333; }
 
 /* ═══════════════════════════════════════════════════════════
+   GITHUB BADGE (setup screen)
+═══════════════════════════════════════════════════════════ */
+.gh-badge {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: var(--transition);
+}
+.gh-badge:hover { color: var(--white); border-color: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════════
    SCROLLBAR GLOBAL
 ═══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
